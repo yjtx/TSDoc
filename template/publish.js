@@ -269,14 +269,25 @@ function generate( docType, title, docs, filename, resolveLinks ) {
 		docType : docType
 	};
 
-	var outpath = path.join( outdir, filename ),
-		html = view.render( 'container.tmpl', docData );
+	var outpath = path.join( outdir, filename),
+		html = view.render( 'egret_container.tmpl', docData );
+//		html = view.render( 'container.tmpl', docData );
 
-	if ( resolveLinks ) {
-		html = helper.resolveLinks( html ); // turn {@link foo} into <a href="foodoc.html">foo</a>
-	}
+//    console.log(html);
+//    return;
+//	if ( resolveLinks ) {
+//		html = helper.resolveLinks( html ); // turn {@link foo} into <a href="foodoc.html">foo</a>
+//	}
 
-	fs.writeFileSync( outpath, html, 'utf8' );
+
+    try {
+        var htmlJson = JSON.parse(html);
+        fs.writeFileSync( outpath.replace("html", "json") , JSON.stringify(htmlJson, null, "\t"), 'utf8' );
+    }
+    catch(e) {
+        fs.writeFileSync( outpath, html, 'utf8' );
+    }
+
 }
 
 function generateSourceFiles( sourceFiles ) {
@@ -523,7 +534,8 @@ exports.publish = function ( taffyData, opts, tutorials ) {
 	helper.registerLink( 'global', globalUrl );
 
 	// set up templating
-	view.layout = 'layout.tmpl';
+//	view.layout = 'layout.tmpl';
+	view.layout = 'egret_layout.tmpl';
 
 	// set up tutorials for helper
 	helper.setTutorials( tutorials );
@@ -837,7 +849,7 @@ exports.publish = function ( taffyData, opts, tutorials ) {
 		// yes, you can use {@link} in tutorials too!
 		html = helper.resolveLinks( html ); // turn {@link foo} into <a href="foodoc.html">foo</a>
 
-		fs.writeFileSync( tutorialPath, html, 'utf8' );
+//		fs.writeFileSync( tutorialPath, html, 'utf8' );
 	}
 
 	// tutorials can have only one parent so there is no risk for loops

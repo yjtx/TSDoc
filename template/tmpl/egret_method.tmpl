@@ -1,0 +1,48 @@
+<?js
+function egret_log(obj) {
+    var slog;
+    if (typeof(obj) == "object") {
+        slog = JSON.stringify(obj, null, "\t");
+    }
+    else {
+        slog = obj;
+    }
+?>
+<?js= slog?>
+<?js
+}
+?>
+
+
+
+<?js
+var data = obj;
+var self = this;
+
+
+var isInterface = false;
+if( data.tags )
+{
+    for( var i=0; i<data.tags.length; i++ )
+    {
+        if( data.tags[i].title=="interface")
+        {
+            isInterface = true; 
+        }
+    }
+}
+
+if( isInterface && kind === 'class')
+{
+
+}
+else
+{
+    if(kind === 'event' && name.indexOf(':') != -1){
+        name = name.split(':')[1];
+    }
+
+    egret_log("\"" + name  + "\""+ " :");
+    egret_log(data);
+}
+?>

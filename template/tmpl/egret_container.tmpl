@@ -1,0 +1,138 @@
+<?js
+function egret_log(obj, isEnd) {
+    var slog;
+    if (typeof(obj) == "object") {
+        slog = JSON.stringify(obj, null, "\t");
+    }
+    else {
+        slog = obj;
+    }
+
+    if (isEnd != true) {
+        slog += ",";
+    }
+?>
+<?js= slog?>
+<?js
+}
+?>
+
+
+
+<?js
+
+    var self = this;
+    docs.forEach(function (doc, i) {
+
+        egret_log("{", true);
+
+        if (doc.kind === 'mainpage' || (doc.kind === 'package')) {
+            egret_log(self.partial('mainpage.tmpl', doc));
+
+        } else if (doc.kind === 'source') {
+            egret_log(self.partial('source.tmpl', doc));
+        } else {
+            if (doc.kind === 'module' && doc.module) {
+                egret_log(self.partial('egret_method.tmpl', doc.module));
+            }
+
+            if (doc.kind === 'class') {
+                egret_log(self.partial('egret_method.tmpl', doc))
+            } else {
+                if (doc.examples && doc.examples.length)
+                    egret_log(self.partial('examples.tmpl', doc.examples))
+            }
+        }
+
+        var classes = self.find({kind: 'class', memberof: doc.longname});
+        if (doc.kind !== 'globalobj' && classes && classes.length) {
+            var classesCount = 0;
+            classes.forEach(function (c) {
+                if (c.name.charAt(0) != "I") {
+                    classesCount++
+                }
+            });
+            if (classesCount > 0) {
+
+                classes.forEach(function (c) {
+                    if (c.name.charAt(0) != "I") {
+                        if (c.summary) {
+                            egret_log("111111");
+                            egret_log(c.summary);
+                        }
+                    }
+                });
+            }
+        }
+
+
+        var classes = self.find({kind: 'class', memberof: doc.longname});
+        if (doc.kind !== 'globalobj' && classes && classes.length) {
+            var interfaceCount = 0;
+            classes.forEach(function (c) {
+                if (c.name.charAt(0) == "I") {
+                    interfaceCount++
+                }
+            });
+            if (interfaceCount > 0) {
+
+                classes.forEach(function (c) {
+                    if (c.name.charAt(0) == "I") {
+                        if (c.summary) {
+                            egret_log("222222");
+                            egret_log(c.summary)
+                        }
+                    }
+                });
+            }
+        }
+
+        //全局变量
+        var members = self.find({kind: 'member', memberof: title === 'Global' ? {isUndefined: true} : doc.longname});
+        if (members && members.length && members.forEach) {
+
+            members.forEach(function (p) {
+                egret_log(self.partial('egret_members.tmpl', p))
+            });
+        }
+
+        //全局函数
+        var methods = self.find({kind: 'function', memberof: title === 'Global' ? {isUndefined: true} : doc.longname});
+        if (methods && methods.length && methods.forEach) {
+
+            methods.forEach(function (m) {
+                egret_log(self.partial('egret_method.tmpl', m))
+            });
+        }
+
+        var typedefs = self.find({kind: 'typedef', memberof: title === 'Global' ? {isUndefined: true} : doc.longname});
+        if (typedefs && typedefs.length && typedefs.forEach) {
+            var htmlType = '';
+            var htmlEnums = '';
+            typedefs.forEach(function (e) {
+                if (e.signature) {
+                    htmlType += self.partial('egret_method.tmpl', e)
+                }
+                else {
+                    htmlEnums += self.partial('egret_members.tmpl', e)
+                }
+            });
+            egret_log(htmlEnums.length > 40 ? htmlEnums : '')
+            egret_log(htmlType.length > 51 ? htmlType : '')
+        }
+
+        var events = self.find({kind: 'event', memberof: title === 'Global' ? {isUndefined: true} : doc.longname});
+        if (events && events.length && events.forEach) {
+
+            events.forEach(function (e) {
+                egret_log(self.partial('egret_method.tmpl', e))
+            });
+        }
+
+        egret_log('"end":{}', true);
+        egret_log("}", true);
+    });
+
+?>
+
+
