@@ -44,53 +44,9 @@ function egret_log(obj, isEnd) {
             }
         }
 
-        var classes = self.find({kind: 'class', memberof: doc.longname});
-        if (doc.kind !== 'globalobj' && classes && classes.length) {
-            var classesCount = 0;
-            classes.forEach(function (c) {
-                if (c.name.charAt(0) != "I") {
-                    classesCount++
-                }
-            });
-            if (classesCount > 0) {
-
-                classes.forEach(function (c) {
-                    if (c.name.charAt(0) != "I") {
-                        if (c.summary) {
-                            egret_log("111111");
-                            egret_log(c.summary);
-                        }
-                    }
-                });
-            }
-        }
-
-
-        var classes = self.find({kind: 'class', memberof: doc.longname});
-        if (doc.kind !== 'globalobj' && classes && classes.length) {
-            var interfaceCount = 0;
-            classes.forEach(function (c) {
-                if (c.name.charAt(0) == "I") {
-                    interfaceCount++
-                }
-            });
-            if (interfaceCount > 0) {
-
-                classes.forEach(function (c) {
-                    if (c.name.charAt(0) == "I") {
-                        if (c.summary) {
-                            egret_log("222222");
-                            egret_log(c.summary)
-                        }
-                    }
-                });
-            }
-        }
-
         //全局变量
         var members = self.find({kind: 'member', memberof: title === 'Global' ? {isUndefined: true} : doc.longname});
         if (members && members.length && members.forEach) {
-
             members.forEach(function (p) {
                 egret_log(self.partial('egret_members.tmpl', p))
             });
@@ -99,7 +55,6 @@ function egret_log(obj, isEnd) {
         //全局函数
         var methods = self.find({kind: 'function', memberof: title === 'Global' ? {isUndefined: true} : doc.longname});
         if (methods && methods.length && methods.forEach) {
-
             methods.forEach(function (m) {
                 egret_log(self.partial('egret_method.tmpl', m))
             });

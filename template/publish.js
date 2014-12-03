@@ -35,6 +35,7 @@ var navOptions = {
 	inverseNav      : false
 };
 
+var egretDoc = require("../template/egretDoc");
 
 /**
  * Check whether a symbol is a function and is the only symbol exported by a module (as in
@@ -269,20 +270,20 @@ function generate( docType, title, docs, filename, resolveLinks ) {
 		docType : docType
 	};
 
+
 	var outpath = path.join( outdir, filename),
 		html = view.render( 'egret_container.tmpl', docData );
-//		html = view.render( 'container.tmpl', docData );
-
-//    console.log(html);
-//    return;
-//	if ( resolveLinks ) {
-//		html = helper.resolveLinks( html ); // turn {@link foo} into <a href="foodoc.html">foo</a>
-//	}
-
 
     try {
         var htmlJson = JSON.parse(html);
-        fs.writeFileSync( outpath.replace("html", "json") , JSON.stringify(htmlJson, null, "\t"), 'utf8' );
+        delete htmlJson["end"];
+
+        for (var key in htmlJson) {
+            if (key != "") {
+                fs.writeFileSync( outpath.replace("html", "json") , JSON.stringify(htmlJson, null, "\t"), 'utf8' );
+            }
+            break;
+        }
     }
     catch(e) {
         fs.writeFileSync( outpath, html, 'utf8' );
@@ -593,14 +594,14 @@ exports.publish = function ( taffyData, opts, tutorials ) {
 	fs.mkPath( outdir );
 
 	// copy static files to outdir
-	var fromDir = path.join( templatePath, 'static' ),
-		staticFiles = fs.ls( fromDir, 3 );
-
-	staticFiles.forEach( function ( fileName ) {
-		var toDir = fs.toDir( fileName.replace( fromDir, outdir ) );
-		fs.mkPath( toDir );
-		fs.copyFileSync( fileName, toDir );
-	} );
+//	var fromDir = path.join( templatePath, 'static' ),
+//		staticFiles = fs.ls( fromDir, 3 );
+//
+//	staticFiles.forEach( function ( fileName ) {
+//		var toDir = fs.toDir( fileName.replace( fromDir, outdir ) );
+//		fs.mkPath( toDir );
+//		fs.copyFileSync( fileName, toDir );
+//	} );
 
 	if ( sourceFilePaths.length ) {
 		sourceFiles = shortenPaths( sourceFiles, path.commonPrefix( sourceFilePaths ) );
@@ -736,13 +737,13 @@ exports.publish = function ( taffyData, opts, tutorials ) {
 	var files = find( {kind : 'file'} ),
 		packages = find( {kind : 'package'} );
 
-	generate( 'index', 'Index',
-		packages.concat(
-			[
-				{kind : 'mainpage', readme : opts.readme, longname : (opts.mainpagetitle) ? opts.mainpagetitle : 'Main Page'}
-			]
-		).concat( files ),
-		indexUrl );
+//	generate( 'index', 'Index',
+//		packages.concat(
+//			[
+//				{kind : 'mainpage', readme : opts.readme, longname : (opts.mainpagetitle) ? opts.mainpagetitle : 'Main Page'}
+//			]
+//		).concat( files ),
+//		indexUrl );
 
 	// set up the lists that we'll use to generate pages
 	var classes = taffy( members.classes );
@@ -861,4 +862,8 @@ exports.publish = function ( taffyData, opts, tutorials ) {
 	}
 
 	if( tutorials && tutorials.length>0) saveChildren( tutorials );
+
+console.log(outdir);
+    egretDoc.doc(outdir);
 };
+
