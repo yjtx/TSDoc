@@ -55,7 +55,7 @@ function classFilter(classObj) {
     keys.push("filename");
 
     //examples
-    keys.push("examples");
+    addExample(classObj, keys);
 
     //deprecated 是否被遗弃
     keys.push("deprecated");
@@ -113,7 +113,7 @@ function memberFilter(member, fileName) {
     keys.push("inherited");
 
     //examples
-    keys.push("examples");
+    addExample(member, keys);
 
     //deprecated 是否被遗弃
     keys.push("deprecated");
@@ -161,11 +161,30 @@ function methodFilter(method, fileName) {
     //params 参数
     keys.push("params");
 
+    //type 类型
+    if (method["returns"] && method["returns"][0]) {
+        method["type"] = method["returns"][0]["type"]["names"][0];
+
+        if (method["type"] == "function") {
+            method["type"] = "Function";
+        }
+
+        method["returns"] = method["returns"][0];
+        method["returns"]["type"] = method["returns"]["type"]["names"][0];
+
+    }
+    keys.push("type");
+    keys.push("returns");
+
+
     //memberof 所属类
     keys.push("memberof");
 
     //scope 变量类型 instance  static
     keys.push("scope");
+
+    //examples
+    addExample(method, keys);
 
     //inherits 继承自哪个类
     keys.push("inherits");
@@ -189,9 +208,6 @@ function methodFilter(method, fileName) {
         }
     }
 
-    //examples
-    keys.push("examples");
-
     //deprecated 是否被遗弃
     keys.push("deprecated");
 
@@ -205,16 +221,38 @@ function methodFilter(method, fileName) {
     filterParams(method);
 }
 
+function addExample(obj, keys) {
+    if (obj["examples"] && obj["examples"][0] && obj["examples"][0]["code"]) {
+        //examples
+        obj["exampleC"] = obj["examples"][0]["code"];
+        keys.push("exampleC");
+    }
+
+    if (obj["tags"] && obj["tags"][0] && obj["tags"][0]["value"]) {
+        //link
+        obj["exampleU"] = obj["tags"][0]["value"];
+        keys.push("exampleU");
+    }
+}
+
 function filterParams(obj) {
     for (var key in obj["params"]) {
         var param = obj["params"][key];
         filterType(param);
+
+        if (param.name.indexOf("...") == 0) {
+            param["type"] = "";
+        }
     }
 }
 
 function filterType(obj) {
     if (obj["type"]) {
         obj["type"] = obj["type"]["names"][0];
+
+        if (obj["type"] == "function") {
+            obj["type"] = "Function";
+        }
     }
 }
 
@@ -256,7 +294,10 @@ function fileters(filePath) {
     }
 
     file.save(path.join(filePath, "..", "egretDocs", "relation", "egret_extends.json"),
-        JSON.stringify({"list" : moduleList, "parent" : classRelations, "children" : childrenRelations}, null, "\t"));
+        JSON.stringify({"parent" : classRelations, "children" : childrenRelations}, null, "\t"));
+
+    file.save(path.join(filePath, "..", "egretDocs", "relation", "egret_list.json"),
+        JSON.stringify(moduleList, null, "\t"));
 
     combinate.combinate(path.join(filePath, "..", "egretDocs"));
 }

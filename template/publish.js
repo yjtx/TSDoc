@@ -36,6 +36,7 @@ var navOptions = {
 };
 
 var egretDoc = require("../template/egretDoc");
+var file = require("../template/filedfadf");
 
 /**
  * Check whether a symbol is a function and is the only symbol exported by a module (as in
@@ -519,6 +520,9 @@ function buildNav( members ) {
  @param {Tutorial} tutorials
  */
 exports.publish = function ( taffyData, opts, tutorials ) {
+    file.remove(outdir);
+
+
 	data = taffyData;
 
 	conf['default'] = conf['default'] || {};

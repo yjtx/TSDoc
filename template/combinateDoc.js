@@ -11,6 +11,9 @@ var classRelations = {};
 function loadRelations() {
     var content = file.read(path.join(currentDir, "relation", "egret_extends.json"));
     classRelations = JSON.parse(content);
+
+    var content = file.read(path.join(currentDir, "relation", "egret_list.json"));
+    classRelations.list = JSON.parse(content);
 }
 
 function loadClass(fileName) {
@@ -33,7 +36,7 @@ function loadClass(fileName) {
 
     for (var key in fileData) {
         var info = fileData[key];
-        if (info["kind"] == "class") {
+        if (info["kind"] == "class" || info["kind"] == "interface") {
             classData = info;
             var parents = [];
 
@@ -45,6 +48,10 @@ function loadClass(fileName) {
 
             if (parents.length > 0) {
                 info["augments"] = parents;
+            }
+
+            if (classRelations["children"][info["memberof"] + "." + key]) {
+                info["children"] = classRelations["children"][info["memberof"] + "." + key];
             }
         }
         else if (info["kind"] == "member") {
@@ -63,6 +70,7 @@ function loadClass(fileName) {
                 else {
                     currentGMemArr.push(info);
                 }
+                info.kind = "globalMember";
             }
 
         }
@@ -82,43 +90,52 @@ function loadClass(fileName) {
                 else {
                     currentGFuncArr.push(info);
                 }
+                info.kind = "globalFunction";
             }
 
 
         }
     }
 
-    currentMemArr.sort(function(a,b){return a["name"]>b["name"]?1:-1});
-    extendsMemArr.sort(function(a,b){return a["name"]>b["name"]?1:-1});
-    currentGMemArr.sort(function(a,b){return a["name"]>b["name"]?1:-1});
-    extendsGMemArr.sort(function(a,b){return a["name"]>b["name"]?1:-1});
-    currentFuncArr.sort(function(a,b){return a["name"]>b["name"]?1:-1});
-    extendsFuncArr.sort(function(a,b){return a["name"]>b["name"]?1:-1});
-    currentGFuncArr.sort(function(a,b){return a["name"]>b["name"]?1:-1});
-    extendsGFuncArr.sort(function(a,b){return a["name"]>b["name"]?1:-1});
+    var memberArr = currentMemArr.concat(extendsMemArr);
+    memberArr.sort(function(a,b){return a["name"]>b["name"]?1:-1});
+
+    var gMemberArr = currentGMemArr.concat(extendsGMemArr);
+    gMemberArr.sort(function(a,b){return a["name"]>b["name"]?1:-1});
+
+    var funcArr = currentFuncArr.concat(extendsFuncArr);
+    funcArr.sort(function(a,b){return a["name"]>b["name"]?1:-1});
+
+    for (var i = 0; i < funcArr.length; i++) {
+        if (funcArr[i]["name"] == "constructor") {
+            funcArr[i]["name"] = classData["name"];
+            var info = funcArr[i];
+            funcArr.splice(i, 1);
+            funcArr.unshift(info);
+            delete info["inherits"];
+            delete info["inherited"];
+            break;
+        }
+    }
+
+    var gFuncArr = currentGFuncArr.concat(extendsGFuncArr);
+    gFuncArr.sort(function(a,b){return a["name"]>b["name"]?1:-1});
 
     if (classRelations["list"][fileName.replace(".json", "")]) {//模块
-
         var resultData = {};
-        addToObject(resultData, "cgf", currentGFuncArr);
-        addToObject(resultData, "egf", extendsGFuncArr);
+        addToObject(resultData, "globalFunction", gFuncArr);
         file.save(path.join(currentDir, "finalClasses", fileName.replace(".json", ".globalFunction.json")), JSON.stringify(resultData, null, "\t"));
 
         var resultData = {};
-        addToObject(resultData, "cgm", currentGMemArr);
-        addToObject(resultData, "egm", extendsGMemArr);
+        addToObject(resultData, "globalMember", gMemberArr);
         file.save(path.join(currentDir, "finalClasses", fileName.replace(".json", ".globalMember.json")), JSON.stringify(resultData, null, "\t"));
     }
     else {
         var resultData = {  "class" : classData};
-        addToObject(resultData, "cm", currentMemArr);
-        addToObject(resultData, "em", extendsMemArr);
-        addToObject(resultData, "cgm", currentGMemArr);
-        addToObject(resultData, "egm", extendsGMemArr);
-        addToObject(resultData, "cf", currentFuncArr);
-        addToObject(resultData, "ef", extendsFuncArr);
-        addToObject(resultData, "cgf", currentGFuncArr);
-        addToObject(resultData, "egf", extendsGFuncArr);
+        addToObject(resultData, "member", memberArr);
+        addToObject(resultData, "function", funcArr);
+        addToObject(resultData, "globalMember", gMemberArr);
+        addToObject(resultData, "globalFunction", gFuncArr);
 
 
         file.save(path.join(currentDir, "finalClasses", fileName), JSON.stringify(resultData, null, "\t"));
@@ -134,6 +151,8 @@ function addToObject(obj, type, array) {
 function combinate(filePath) {//egretDocs
     currentDir = filePath;
     loadRelations();
+
+    file.remove(path.join(currentDir, "finalClasses"));
 
     var fileList = file.getDirectoryListing(path.join(filePath, "classes"), true);
     for (var key in fileList) {
