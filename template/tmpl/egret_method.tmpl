@@ -38,11 +38,20 @@ if( isInterface && kind === 'class')
 }
 else
 {
+
     if(kind === 'event' && name.indexOf(':') != -1){
         name = name.split(':')[1];
     }
 
-    egret_log("\"" + name  + "\""+ " :");
+    if (data["tags"] && data["tags"][0]["title"] == "language") {
+        egret_log("\"" + name + "_" +  data["tags"][0]["text"] + "\""+ " :");
+
+
+    }
+    else {
+        egret_log("\"" + name  + "\""+ " :");
+    }
+
     egret_log(data);
 }
 ?>

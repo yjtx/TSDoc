@@ -10,8 +10,8 @@
 	},
 	"dependencies" :
 	{
-		"jsdoc":"3.2.0"
-		,"optimist":"0.6.0"
+		"jsdoc":"3.2.0",
+		"optimist":"0.6.0"
 	},
 	"analyze": true,
 	"license": "MIT",

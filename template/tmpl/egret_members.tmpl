@@ -18,6 +18,12 @@ function egret_log(obj) {
 var data = obj;
 var self = this;
 
-    egret_log("\"" + id + "\"" + " :");
+    if (data["tags"] && data["tags"][0]["title"] == "language") {
+        egret_log("\"" + id + "_" +  data["tags"][0]["text"] + "\""+ " :");
+    }
+    else {
+        egret_log("\"" + id + "\"" + " :");
+    }
+
     egret_log(data);
 ?>
